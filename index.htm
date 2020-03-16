@@ -35,13 +35,11 @@
                         "apikey": APIKEY,
                         "s": $input.val()
                     },
-                    error: (e) => {
+                    error: () => {
                         $list.html("");
                         $list.append(`<div class="col"></div>`);
                         $("#movie-list > .col").html("");
-                        $("#movie-list > .col").html(`<h1 class="text-center">${e}</h1>`);
-                        console.log(e);
-                        console.log("fail")
+                        $("#movie-list > .col").html(`<h1 class="text-center">Oops.. there was an error</h1>`)
                     },
                     success: (res) => {
                         if (res.Response == "True") {
