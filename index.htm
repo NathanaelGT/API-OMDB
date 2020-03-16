@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>X10 - Movie list</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
+    <script>
+        $(() => {
+            const UNKNOWN_IMG =
+                "https://images.pexels.com/photos/356079/pexels-photo-356079.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=330",
+                APIURL = "http://omdbapi.com",
+                APIKEY = "dca61bcc",
+                $button = $("#search-button"),
+                $input = $("#search-input"),
+                $list = $("#movie-list"),
+                $body = $(".modal-body"),
+                $label = $("#modalLabel");
+
+            searchMovie = () => {
+                $.ajax({
+                    url: APIURL,
+                    type: "get",
+                    dataType: "json",
+                    data: {
+                        "apikey": APIKEY,
+                        "s": $input.val()
+                    },
+                    success: (res) => {
+                        if (res.Response == "True") {
+                            $list.html("");
+                            $("#movie-list > .col").html("");
+                            let movies = res.Search;
+
+                            $.each(movies, (i, data) => {
+                                $list.append(`
+                                    <div class="col-md-4 mb-5">
+                                        <div class="card">
+                                            <img src="${(data.Poster == "N/A" ? UNKNOWN_IMG : data.Poster)}" class="card-img-top" alt="${data.Title} wallpaper" style="height: 480px">
+                                        <div class="card-body">
+                                        <h5 class="card-title">${data.Title} (${data.Year})</h5>
+                                        <a href="#" class="card-link see-detail" data-toggle="modal" data-target="#modalBox" data-id="${data.imdbID}">Details</a>
+                                        </div>
+                                    </div>
+                                    `)
+                            })
+                        } else {
+                            $("#movie-list > .col").html("");
+                            $("#movie-list > .col").html(`
+                                <h1 class="text-center">${res.Error}</h1>
+                            `)
+                        }
+                        $input.val("")
+                    }
+                })
+            };
+
+            loading = () => {
+                $list.html("");
+                $list.append(`<div class="col"></div>`);
+                $("#movie-list > .col").html("");
+                $("#movie-list > .col").html(`<h1 class="text-center">Loading...</h1>`)
+            };
+
+            $button.on("click", () => {
+                loading();
+                searchMovie()
+            });
+
+            $input.on("keyup", (e) => {
+                if (e.which === 13) {
+                    loading();
+                    searchMovie()
+                }
+            });
+
+
+            $("#movie-list").on("click", ".see-detail", function () {
+                $.ajax({
+                    url: APIURL,
+                    type: "get",
+                    dataType: "json",
+                    data: {
+                        "apikey": APIKEY,
+                        "i": $(this).data("id")
+                    },
+                    success: (res) => {
+                        if (res.Response == "True") {
+                            $label.html(`${res.Title}`)
+                            $body.html(`
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <img src="
+                                        ${(res.Poster == "N/A" ? UNKNOWN_IMG : res.Poster)}
+                                        " alt="${res.Title} wallpaper" class="img-fluid mx-auto d-block" style="height: 98%">
+                                    </div>
+
+                                    <div class="col-md-8">
+                                        <ul class="list-group">
+                                            <li class="list-group-item">
+                                                Score: ${res.imdbRating} (from ${res.imdbVotes} IMDB users)
+                                            </li>
+                                            <li class="list-group-item">
+                                                Production: ${res.Production}
+                                            </li>
+                                            <li class="list-group-item">
+                                                Released: ${res.Released}
+                                            </li>
+                                            <li class="list-group-item">
+                                                Blue-ray: ${res.DVD}
+                                            </li>
+                                            <li class="list-group-item">
+                                                Duration: ${res.Runtime}
+                                            </li>
+                                            <li class="list-group-item">
+                                                Director: ${res.Director}
+                                            </li>
+                                            <li class="list-group-item">
+                                                Writer: ${res.Writer}
+                                            </li>
+                                            <li class="list-group-item">
+                                                Genre: ${res.Genre}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p>${(res.Plot == "N/A") ? "" : res.Plot}</p>
+                            </div>
+                            `)
+                        } else {
+                            $label.html('Oops.. there was an error');
+                            $body.html(`<h1 class="text-center">${res.Error}</h1>`)
+                        }
+                    }
+                })
+            })
+        })
+    </script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="https://www.instagram.com/nat.hanaelgt/" target="_blank">X10</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link active" href="#">Movie</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container">
+
+        <!-- Search input & button -->
+        <div class="row mt-3 justify-content-center">
+            <div class="col-md-8">
+                <h1 class="text-center mb-3">Search Movie</h1>
+                <div class="input-group mb-3">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search movie..." autofocus>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="search-button">Button</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Search result -->
+        <div class="row" id="movie-list"></div>
+
+    </main>
+
+    <!-- Modal box -->
+    <div class="modal fade" id="modalBox" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
