@@ -35,6 +35,12 @@
                         "apikey": APIKEY,
                         "s": $input.val()
                     },
+                    error: (e) => {
+                        $list.html("");
+                        $list.append(`<div class="col"></div>`);
+                        $("#movie-list > .col").html("");
+                        $("#movie-list > .col").html(`<h1 class="text-center">${e}</h1>`)
+                    },
                     success: (res) => {
                         if (res.Response == "True") {
                             $list.html("");
@@ -90,6 +96,12 @@
                     data: {
                         "apikey": APIKEY,
                         "i": $(this).data("id")
+                    },
+                    error: (e) => {
+                        $list.html("");
+                        $list.append(`<div class="col"></div>`);
+                        $("#movie-list > .col").html("");
+                        $("#movie-list > .col").html(`<h1 class="text-center">${e}</h1>`)
                     },
                     success: (res) => {
                         if (res.Response == "True") {
